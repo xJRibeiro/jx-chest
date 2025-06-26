@@ -1,0 +1,1 @@
+personal_chest = { name = 'personal_chest', label = 'Baú Pessoal', weight = 1, type = 'item', image = 'personal_chest.png', unique = true, useable = true, shouldClose = true, description = 'Um baú pessoal para armazenar itens' },
