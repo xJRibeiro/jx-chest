@@ -1,8 +1,8 @@
-print(_L('diag_loading_file', 'client/admin.lua (ox_lib version)'))
+-- -- client/admin.lua (ox_lib version)
+-- print(_L("diag_loading_file", "client/admin.lua (ox_lib version)"))
 
 local AdminPanel = {}
 AdminPanel.State = {chestData = {}, summary = {}}
-
 
 AdminPanel.Network = {
     fetchAdminData = function()
@@ -21,31 +21,42 @@ AdminPanel.Network = {
         ExecuteCommand("removeallchests")
     end
 }
-AdminPanel.Formatters = {shortUUID = function(uuid)
-        return uuid:sub(1, 8) .. "..."
-    end, formatWeightKg = function(grams)
+
+AdminPanel.Formatters = {
+    shortUUID = function(uuid)
+        return uuid and (uuid:sub(1, 8) .. "...") or _L("text_unknown")
+    end,
+    formatWeightKg = function(grams)
         return string.format("%.1f", (grams or 0) / 1000)
-    end, formatCoords = function(coords)
+    end,
+    formatCoords = function(coords)
         return string.format("X:%.1f Y:%.1f Z:%.1f", coords.x, coords.y, coords.z)
-    end, getSharedWithText = function(chest)
-        if chest.sharedWith and #chest.sharedWith > 0 then
+    end,
+    getSharedWithText = function(chest)
+        if chest.shared_with and #chest.shared_with > 0 then
             local entries = {}
-            for _, shared in ipairs(chest.sharedWith) do
-                table.insert(entries, "• " .. (shared.name or _L('admin_unknown_player')) .. " (" .. shared.citizenid .. ")")
+            for _, shared in ipairs(chest.shared_with) do
+                table.insert(
+                    entries,
+                    _L("admin_shared_list_bullet") ..
+                        (shared.name or _L("admin_unknown_player")) .. " (" .. shared.citizenid .. ")"
+                )
             end
-            return "\n\n**" .. _L("admin_shared_with") .. "**\n" .. table.concat(entries, "\n")
+            return _L("admin_shared_with_header") .. table.concat(entries, "\n")
         end
-        return "\n\n**" .. _L("admin_shared_with") .. "** " .. _L("admin_nobody")
-    end, formatFullMysqlTimestamp = function(mysqlTimestamp)
+        return _L("admin_shared_with_header") .. _L("admin_nobody")
+    end,
+    formatFullMysqlTimestamp = function(mysqlTimestamp)
         if not mysqlTimestamp or type(mysqlTimestamp) ~= "string" then
             return _L("admin_unknown")
         end
         local year, month, day, hour, min, sec = string.match(mysqlTimestamp, "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
         if year then
-            return string.format("%s-%s-%s %s:%s:%s", day, month, year, hour, min, sec)
+            return string.format(_L("admin_date_format"), day, month, year, hour, min, sec)
         end
         return mysqlTimestamp
-    end}
+    end
+}
 
 AdminPanel.UI = {
     createMenu = function(id, title, options)
@@ -95,9 +106,7 @@ AdminPanel.UI = {
                 title = _L("admin_remove_all_button"),
                 description = _L("admin_remove_all_desc"),
                 icon = "skull-crossbones",
-                onSelect = function()
-                    AdminPanel.Network.requestRemoveAll()
-                end
+                onSelect = AdminPanel.Network.requestRemoveAll
             }
         }
         AdminPanel.UI.createMenu("chest_admin_main", _L("admin_panel_title"), options)
@@ -106,11 +115,19 @@ AdminPanel.UI = {
         local options = {}
         local chests = filteredChests or AdminPanel.State.chestData
         if #chests == 0 then
-            local noResultsTitle = searchTerm and _L("admin_no_results") or _L("admin_no_chests")
-            table.insert(options, {title = noResultsTitle, disabled = true, icon = "inbox"})
+            table.insert(
+                options,
+                {
+                    title = (searchTerm and _L("admin_no_results") or _L("admin_no_chests")),
+                    disabled = true,
+                    icon = "inbox"
+                }
+            )
         else
             for _, chest in ipairs(chests) do
-                local statusIcon = string.find(chest.status, _L("admin_status_in_use")) and "🔴" or "🟢"
+                local statusIcon =
+                    string.find(chest.status, _L("admin_status_in_use")) and _L("admin_status_icon_in_use") or
+                    _L("admin_status_icon_available")
                 local weightPercent =
                     chest.maxWeight > 0 and chest.totalWeight > 0 and
                     math.floor((chest.totalWeight / chest.maxWeight) * 100) or
@@ -143,8 +160,7 @@ AdminPanel.UI = {
         end
         table.insert(options, AdminPanel.UI.createBackButton(AdminPanel.UI.openMainAdminMenu))
         local title =
-            searchTerm and string.format('%s "%s"', _L("admin_search_results"), searchTerm) or
-            _L("admin_chest_list")
+            searchTerm and string.format(_L("admin_search_results_title"), searchTerm) or _L("admin_chest_list")
         AdminPanel.UI.createMenu("chest_list_menu", title .. " (" .. #chests .. ")", options)
     end,
     openChestDetailsMenu = function(chest)
@@ -180,20 +196,20 @@ AdminPanel.UI = {
                 description = _L("admin_remove_warning"),
                 icon = "trash-alt",
                 onSelect = function()
-                    local alert =
+                    if
                         lib.alertDialog(
-                        {
-                            header = _L("admin_confirm_removal"),
-                            content = _L(
-                                "admin_removal_warning",
-                                AdminPanel.Formatters.shortUUID(chest.chest_uuid),
-                                chest.ownerName
-                            ),
-                            centered = true,
-                            cancel = true
-                        }
-                    )
-                    if alert == "confirm" then
+                            {
+                                header = _L("admin_confirm_removal"),
+                                content = _L(
+                                    "admin_removal_warning",
+                                    AdminPanel.Formatters.shortUUID(chest.chest_uuid),
+                                    chest.ownerName
+                                ),
+                                centered = true,
+                                cancel = true
+                            }
+                        ) == "confirm"
+                     then
                         AdminPanel.Network.removeChest(chest.chest_uuid)
                     end
                 end
@@ -209,7 +225,7 @@ AdminPanel.UI = {
         )
         AdminPanel.UI.createMenu(
             "chest_details_menu",
-            _L("admin_chest_details") .. " #" .. AdminPanel.Formatters.shortUUID(chest.chest_uuid),
+            string.format(_L("admin_chest_details_title"), AdminPanel.Formatters.shortUUID(chest.chest_uuid)),
             options
         )
     end,
@@ -237,13 +253,13 @@ AdminPanel.UI = {
             string.format(
                 "**%s:** %s%s",
                 _L("admin_updated"),
-                f.formatFullMysqlTimestamp(chest.updated_at),
+                f.formatFullMysqlTimestamp(chest.last_updated),
                 f.getSharedWithText(chest)
             )
         }
         lib.alertDialog(
             {
-                header = _L("admin_chest_info") .. " #" .. f.shortUUID(chest.chest_uuid),
+                header = string.format(_L("admin_chest_details_title"), f.shortUUID(chest.chest_uuid)),
                 content = table.concat(content, "\n"),
                 centered = true,
                 size = "lg"
@@ -281,12 +297,7 @@ AdminPanel.UI = {
     end
 }
 
-RegisterNetEvent(
-    "rsg_chest:client:openAdminPanel",
-    function()
-        AdminPanel.Network.fetchAdminData()
-    end
-)
+RegisterNetEvent("rsg_chest:client:openAdminPanel", AdminPanel.Network.fetchAdminData)
 RegisterNetEvent(
     "rsg_chest:client:receiveAdminChestData",
     function(data, summaryData)
@@ -301,24 +312,23 @@ RegisterNetEvent(
         SetEntityCoords(PlayerPedId(), coords.x, coords.y, coords.z + 0.5, true, false, false, true)
     end
 )
-
 RegisterNetEvent(
     "rsg_chest:client:confirmRemoveAll",
     function(chestCount)
-        local alert =
+        if
             lib.alertDialog(
-            {
-                header = _L("admin_confirm_remove_all_header"),
-                content = string.format(_L("admin_confirm_remove_all_content"), chestCount),
-                centered = true,
-                cancel = true,
-                size = "lg"
-            }
-        )
-        if alert == "confirm" then
+                {
+                    header = _L("admin_confirm_remove_all_header"),
+                    content = string.format(_L("admin_confirm_remove_all_content"), chestCount),
+                    centered = true,
+                    cancel = true,
+                    size = "lg"
+                }
+            ) == "confirm"
+         then
             TriggerServerEvent("rsg_chest:server:doRemoveAllChests")
         end
     end
 )
 
-print(_L('diag_loaded_file', 'client/admin.lua (ox_lib version)'))
+-- print(_L("diag_loaded_file", "client/admin.lua (ox_lib version)"))
