@@ -29,7 +29,7 @@ Config.LogLevel = 3
 -- Habilita/desabilita o envio de logs para o Discord via Webhook. | Enables/disables sending logs to Discord via Webhook.
 Config.LogToDiscord = true
 -- URL do Webhook do Discord. SÓ SERÁ USADO SE Config.LogToDiscord FOR TRUE. | Discord Webhook URL. ONLY USED IF Config.LogToDiscord IS TRUE.
-Config.DiscordWebhook = ''
+Config.DiscordWebhook = 'https://discord.com/api/webhooks/1387010524960653332/CC6AG-Wrv3gnrasvnccr_BcNE0QrsNjL5TtX4pdOZgNAM46EHWCkfKBvBz5CsP3s4eS1'
 
 -- Habilita/desabilita o envio de ações administrativas para o Discord via Webhook. | Enables/disables sending admin actions to Discord via Webhook.
 Config.LogAdminActionsToDiscord = false 
@@ -60,6 +60,10 @@ Config.RemovalTime = 2000   -- 2 segundos | Time to remove the chest 2 seconds
 
 -- Cooldown em milissegundos para evitar spam de ações | Action cooldown in milliseconds to prevent action spamming
 Config.ActionCooldown = 2000 -- 2 segundos | Action cooldown in milliseconds to prevent action spamming 2 seconds
+
+-- Distância em que os baús serão renderizados para o jogador. Valores muito altos podem impactar o cliente.
+-- Distance at which chests will be rendered for the player. Very high values can impact the client.
+Config.StreamDistance = 25.0
 
 --------------------------------------------------------------------------------
 -- COMANDOS DO BAÚ | CHEST COMMANDS
