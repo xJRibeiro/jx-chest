@@ -1,0 +1,2 @@
+-- shared/namespace.lua
+JX = {}
