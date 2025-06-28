@@ -29,7 +29,7 @@ Config.LogLevel = 3
 -- Habilita/desabilita o envio de logs para o Discord via Webhook. | Enables/disables sending logs to Discord via Webhook.
 Config.LogToDiscord = true
 -- URL do Webhook do Discord. SÓ SERÁ USADO SE Config.LogToDiscord FOR TRUE. | Discord Webhook URL. ONLY USED IF Config.LogToDiscord IS TRUE.
-Config.DiscordWebhook = 'https://discord.com/api/webhooks/1387010524960653332/CC6AG-Wrv3gnrasvnccr_BcNE0QrsNjL5TtX4pdOZgNAM46EHWCkfKBvBz5CsP3s4eS1'
+Config.DiscordWebhook = ''
 
 -- Habilita/desabilita o envio de ações administrativas para o Discord via Webhook. | Enables/disables sending admin actions to Discord via Webhook.
 Config.LogAdminActionsToDiscord = false 
